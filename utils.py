@@ -23,17 +23,28 @@ def softmax(z_vec):
     return result/denominator
 
 
+def softmax(z_vec):
+    exps = np.exp(z_vec - z_vec.max())
+    return exps / np.sum(exps)
+
+
+def softmax_deriv(z_vec):
+    return softmax(z_vec) * (1 - softmax(z_vec))
+
+
 def sigmoid_deriv(z_vec):
     result = np.zeros(z_vec.shape)
-    for i, z in enumerate(z_vec[0]):
-        result[0][i] = sigmoid(z) * (1 - sigmoid(z))
+    for i, z in enumerate(z_vec[:, 0]):
+        result[i, 0] = sigmoid(z) * (1 - sigmoid(z))
     return z_vec
 
 
 def softplus_deriv(z_vec):
     result = np.zeros(z_vec.shape)
-    for i, z in enumerate(z_vec[0]):
-        result[0][i] = 1/(1 + exp(-z))
+    for i, z in enumerate(z_vec[:, 0]):
+        if abs(z) > 500:
+            z = 500 * (-1 if z < 0 else 1)
+        result[i, 0] = 1/(1 + exp(-z))
     return z_vec
 
 
