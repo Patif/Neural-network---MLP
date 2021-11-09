@@ -8,9 +8,9 @@ class MLP:
         self.__w = []
         self.__bias = []
         self.__layer_activ_functions = []
-        for i, (layer_size, activ_function, w_normal, bias_normal) in enumerate(structure[0:-1]):
-            self.__w.append(np.random.normal(w_normal[0], w_normal[1], (structure[i + 1][0], layer_size)))
-            self.__bias.append(np.random.normal(bias_normal[0], bias_normal[1], (structure[i + 1][0], 1)))
+        for i, (layer_size, activ_function) in enumerate(structure[0:-1]):
+            self.__w.append(np.random.randn(structure[i + 1][0], layer_size)*np.sqrt(2/layer_size))
+            self.__bias.append(np.zeros((structure[i + 1][0], 1)))
             self.__layer_activ_functions.append(activ_function)
 
     def sets(self, w, bias):
@@ -40,17 +40,13 @@ class MLP:
                 correct_preds += 1
         return correct_preds / len(x_test)
 
-    def train(self, X_train, Y_train, batch_size, alpha, x_val, y_val, epochs=30, size=5000):
-        length = min(len(X_train), size)
-        batches = length // batch_size
+    def train(self, x_train, y_train, batch_size, alpha, x_val, y_val, epochs=30):
+        batches = len(x_val) // batch_size
         best_w = None
         best_bias = None
         highest_acc = None
         epoch = 0
         while epoch < epochs:
-            indices = np.random.randint(length, size=size)
-            x_train = X_train[indices]
-            y_train = Y_train[indices]
             for i in range(batches):
                 indices = np.random.randint(x_train.shape[0], size=batch_size)
                 self.learn(x_train[indices], y_train[indices], batch_size, alpha)
@@ -75,8 +71,7 @@ class MLP:
             activations = [data]
             z_matrices = []
             for j, w_matrix in enumerate(self.__w):
-                data = activations[-1]
-                z = w_matrix @ data + self.__bias[j]
+                z = w_matrix @ activations[-1] + self.__bias[j]
                 a = self.__layer_activ_functions[j](z)
                 activations.append(a)
                 z_matrices.append(z)
