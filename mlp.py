@@ -1,8 +1,5 @@
 import numpy as np
-from copy import deepcopy
-from math import log
 from utils import get_deriv, softmax, softmax_deriv
-from random import randrange
 
 
 class MLP:
@@ -36,64 +33,27 @@ class MLP:
         correct_preds = 0
         for i, data in enumerate(x_test):
             for index, w_matrix in enumerate(self.__w):
-                z = np.round(w_matrix @ data + self.__bias[index], 8)
-                for j in range(z.shape[0]):
-                    z[j][0] = self.__layer_activ_functions[index](z[j][0])
-                data = z
-            output_layer = softmax(data)
-            prediction = None
-            max_prob = None
-            result = None
-            for j, probability in enumerate(output_layer):
-                if max_prob is None or probability > max_prob:
-                    prediction = j
-                    max_prob = probability
-                if y_test[j, i] == 1:
-                    result = j
-            if result == prediction:
+                z = w_matrix @ data + self.__bias[index]
+                data = self.__layer_activ_functions[index](z)
+            prediction = np.argmax(data)
+            if y_test[i] == prediction:
                 correct_preds += 1
         return correct_preds / len(x_test)
 
-    def learn(self, x_train, y_train, batch_size, alpha, x_val, y_val, epochs=30):
-        batches = len(x_train) // batch_size
+    def train(self, X_train, Y_train, batch_size, alpha, x_val, y_val, epochs=30, size=5000):
+        length = min(len(X_train), size)
+        batches = length // batch_size
         best_w = None
         best_bias = None
         highest_acc = None
-        precision = 6
         epoch = 0
         while epoch < epochs:
-            w_delta = []
-            bias_delta = []
-            for m in range(len(self.__bias)):
-                w_delta.append(np.zeros(self.__w[m].shape))
-                bias_delta.append(np.zeros(self.__bias[m].shape))
+            indices = np.random.randint(length, size=size)
+            x_train = X_train[indices]
+            y_train = Y_train[indices]
             for i in range(batches):
-                for index, data in enumerate(x_train[i * batch_size: (i + 1) * batch_size]):
-                    j = None
-                    activations = [np.round(data, precision)]
-                    z_matrices = []
-                    for j, w_matrix in enumerate(self.__w):
-                        data = activations[-1]
-                        z = np.round(w_matrix @ data + self.__bias[j], precision)
-                        a = np.zeros((z.shape[0], 1), dtype=float)
-                        for k in range(z.shape[0]):
-                            a[k, 0] = self.__layer_activ_functions[j](z[k, 0])
-                        activations.append(np.round(a, 8))
-                        z_matrices.append(z)
-                    y_pred = softmax(activations[-1])
-                    for z in range(y_pred.shape[0]):
-                        y_pred[z, 0] = -log(y_pred[z, 0])
-                    error = np.round((softmax(activations.pop()) - y_train[:, i * batch_size + index].reshape(10, 1)) * softmax_deriv(z_matrices.pop()), precision)
-                    while j >= 0:
-                        bias_delta[j] += error
-                        w_delta[j] += error @ activations.pop().transpose()
-                        if z_matrices:
-                            error = np.round(self.__w[j].transpose() @ error * get_deriv(self.__layer_activ_functions[j])(
-                                z_matrices.pop()), precision)
-                        j -= 1
-                for j in range(len(self.__bias)):
-                    self.__bias[j] -= np.round(alpha / batch_size * bias_delta[j], precision)
-                    self.__w[j] -= np.round(alpha / batch_size * w_delta[j], precision)
+                indices = np.random.randint(x_train.shape[0], size=batch_size)
+                self.learn(x_train[indices], y_train[indices], batch_size, alpha)
             acc = self.assessment(x_val, y_val)
             print("Celnosc(walidacyjny): {} Epoka: {}".format(acc, epoch + 1))
             if best_w is None or acc > highest_acc:
@@ -103,3 +63,32 @@ class MLP:
             epoch += 1
         self.__w = best_w
         self.__bias = best_bias
+
+    def learn(self, x_train, y_train, batch_size, alpha):
+        delta_w = []
+        delta_bias = []
+        for m in range(len(self.__bias)):
+            delta_w.append(np.zeros(self.__w[m].shape))
+            delta_bias.append(np.zeros(self.__bias[m].shape))
+        for index, data in enumerate(x_train):
+            j = None
+            activations = [data]
+            z_matrices = []
+            for j, w_matrix in enumerate(self.__w):
+                data = activations[-1]
+                z = w_matrix @ data + self.__bias[j]
+                a = self.__layer_activ_functions[j](z)
+                activations.append(a)
+                z_matrices.append(z)
+            y_1h = np.bincount([y_train[index]], minlength=self.__bias[-1].shape[0]).reshape(10, 1)
+            error = (activations.pop() - y_1h) * get_deriv(self.__layer_activ_functions[-1])(z_matrices.pop())
+            while j >= 0:
+                delta_bias[j] += error
+                delta_w[j] += error @ activations.pop().transpose()
+                if z_matrices:
+                    error = self.__w[j].transpose() @ error * get_deriv(self.__layer_activ_functions[j - 1])(
+                        z_matrices.pop())
+                j -= 1
+        for j in range(len(self.__bias)):
+            self.__bias[j] -= (alpha / batch_size) * delta_bias[j]
+            self.__w[j] -= (alpha / batch_size) * delta_w[j]
