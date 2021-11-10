@@ -15,6 +15,18 @@ if __name__ == "__main__":
     reps = 10
 
     acc = 0
+    neural_structure = [(N, softplus),
+                        (M, softmax),
+                        [M_prim]]
+    for i in range(reps):
+        network = MLP(neural_structure)
+        network.train(X_train, Y_train, 100, 2.5, X_test[0:9500], Y_test[0:9500])
+        acc_i = network.assessment(X_test[9500:], Y_test[9500:])
+        print(i, acc_i)
+        acc += acc_i
+    print(acc / reps, "softplus")
+
+    acc = 0
     neural_structure = [(N, tanh),
                         (M, softmax),
                         [M_prim]]
@@ -26,17 +38,6 @@ if __name__ == "__main__":
         acc += acc_i
     print(acc / reps, "tanh")
 
-    acc = 0
-    neural_structure = [(N, sigmoid),
-                        (M, softplus),
-                        [M_prim]]
-    for i in range(reps):
-        network = MLP(neural_structure)
-        network.train(X_train, Y_train, 100, 2.5, X_test[0:9500], Y_test[0:9500])
-        acc_i = network.assessment(X_test[9500:], Y_test[9500:])
-        print(i, acc_i)
-        acc += acc_i
-    print(acc / reps, "softplus")
 
     acc = 0
     neural_structure = [(N, sigmoid),
