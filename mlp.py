@@ -40,7 +40,7 @@ class MLP:
                 correct_preds += 1
         return correct_preds / len(x_test)
 
-    def train(self, x_train, y_train, batch_size, alpha, x_val, y_val, epochs=30):
+    def train(self, x_train, y_train, batch_size, alpha, x_val, y_val, epochs=20):
         batches = len(x_val) // batch_size
         best_w = None
         best_bias = None
@@ -51,7 +51,7 @@ class MLP:
                 indices = np.random.randint(x_train.shape[0], size=batch_size)
                 self.learn(x_train[indices], y_train[indices], batch_size, alpha)
             acc = self.assessment(x_val, y_val)
-            print("Celnosc(walidacyjny): {} Epoka: {}".format(acc, epoch + 1))
+            #print("Celnosc(walidacyjny): {} Epoka: {}".format(acc, epoch + 1))
             if best_w is None or acc > highest_acc:
                 best_w = self.__w
                 best_bias = self.__bias

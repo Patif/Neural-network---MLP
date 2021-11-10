@@ -10,6 +10,19 @@ def ReLU(x):
     return 0 if x < 0 else x
 
 
+def tanh(z_vec):
+    z_vec = np.clip(z_vec, -500, 500)
+    exp_plus = np.exp(z_vec)
+    exp_minus = np.exp(-z_vec)
+    return (exp_plus - exp_minus)/(exp_plus + exp_minus)
+
+
+def tanh_deriv(z_vec):
+    z_vec = np.clip(z_vec, -500, 500)
+    return 1 - tanh(z_vec)**2
+
+
+
 def softplus(x):
     x = np.clip(x, -500, 500)
     return np.log(1 + np.exp(x))
@@ -27,18 +40,12 @@ def softmax_deriv(z_vec):
 
 def sigmoid_deriv(z_vec):
     z_vec = np.clip(z_vec, -500, 500)
-    result = np.zeros(z_vec.shape)
-    for i, z in enumerate(z_vec[:, 0]):
-        result[i, 0] = sigmoid(z) * (1 - sigmoid(z))
-    return z_vec
+    return sigmoid(z_vec) * (1 - sigmoid(z_vec))
 
 
 def softplus_deriv(z_vec):
     z_vec = np.clip(z_vec, -500, 500)
-    result = np.zeros(z_vec.shape)
-    for i, z in enumerate(z_vec[:, 0]):
-        result[i, 0] = 1/(1 + np.exp(-z))
-    return z_vec
+    return 1/(1 + np.exp(-z_vec))
 
 
 def get_deriv(function):
@@ -48,3 +55,5 @@ def get_deriv(function):
         return softplus_deriv
     if function == softmax:
         return softmax_deriv
+    if function == tanh:
+        return tanh_deriv
