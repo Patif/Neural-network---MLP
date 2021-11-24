@@ -21,8 +21,6 @@ def tanh_deriv(z_vec):
     z_vec = np.clip(z_vec, -500, 500)
     return 1 - tanh(z_vec)**2
 
-
-
 def softplus(x):
     x = np.clip(x, -500, 500)
     return np.log(1 + np.exp(x))
@@ -46,6 +44,13 @@ def sigmoid_deriv(z_vec):
 def softplus_deriv(z_vec):
     z_vec = np.clip(z_vec, -500, 500)
     return 1/(1 + np.exp(-z_vec))
+
+
+def momentum(delta_w_last, delta_bias_last, gamma):
+    for i in range(len(delta_w_last)):
+        delta_w_last[i] = np.dot(delta_w_last[i], gamma)
+        delta_bias_last[i] = np.dot(delta_bias_last[i], gamma)
+    return delta_w_last, delta_bias_last
 
 
 def get_deriv(function):
