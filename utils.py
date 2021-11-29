@@ -7,7 +7,11 @@ def sigmoid(x):
 
 
 def ReLU(x):
-    return 0 if x < 0 else x
+    return np.maximum(0, x)
+
+
+def ReLU_deriv(x):
+    return (x > 0) * 1
 
 
 def tanh(z_vec):
@@ -62,3 +66,5 @@ def get_deriv(function):
         return softmax_deriv
     if function == tanh:
         return tanh_deriv
+    if function == ReLU:
+        return ReLU_deriv
