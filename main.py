@@ -15,7 +15,7 @@ if __name__ == "__main__":
     M = 50
     M_prim = 10
     reps = 10
-    epochs = 25
+    epochs = 20
 
     neural_structure = [(N, sigmoid),
                         (M, softmax),
@@ -24,28 +24,71 @@ if __name__ == "__main__":
     acc = 0
     for i in range(reps):
         network = MLP(neural_structure, initialization=0)
-        network.train(X_train, Y_train, 150, 0.05, X_test, Y_test, epochs=epochs, optimizer=0)
+        network.train(X_train, Y_train, 150, 0.05, X_test, Y_test, epochs=epochs, optimizer=5)
         acc_i = network.assessment(X_test, Y_test)
         print(i, acc_i)
         acc += acc_i
-    print(acc / reps, "no optimizer, he")
+    print(acc / reps, "he sigmoid")
 
+    acc = 0
+    neural_structure = [(N, tanh),
+                        (M, softmax),
+                        [M_prim]]
     for i in range(reps):
         network = MLP(neural_structure, initialization=0)
-        network.train(X_train, Y_train, 150, 0.05, X_test, Y_test, epochs=epochs, optimizer=1)
+        network.train(X_train, Y_train, 150, 0.05, X_test, Y_test, epochs=epochs, optimizer=5)
         acc_i = network.assessment(X_test, Y_test)
         print(i, acc_i)
         acc += acc_i
-    print(acc / reps, "momentum, he")
+    print(acc / reps, "he tanh")
 
+    acc = 0
+    neural_structure = [(N, ReLU),
+                        (M, softmax),
+                        [M_prim]]
     for i in range(reps):
         network = MLP(neural_structure, initialization=0)
-        network.train(X_train, Y_train, 150, 0.05, X_test, Y_test, epochs=epochs, optimizer=2)
+        network.train(X_train, Y_train, 150, 0.05, X_test, Y_test, epochs=epochs, optimizer=5)
         acc_i = network.assessment(X_test, Y_test)
         print(i, acc_i)
         acc += acc_i
-    print(acc / reps, "momentum nesterov, he")
+    print(acc / reps, "he relu")
 
+    neural_structure = [(N, sigmoid),
+                        (M, softmax),
+                        [M_prim]]
+    acc = 0
+    for i in range(reps):
+        network = MLP(neural_structure, initialization=1)
+        network.train(X_train, Y_train, 150, 0.05, X_test, Y_test, epochs=epochs, optimizer=5)
+        acc_i = network.assessment(X_test, Y_test)
+        print(i, acc_i)
+        acc += acc_i
+    print(acc / reps, "xavier sigmoid")
+
+    neural_structure = [(N, ReLU),
+                        (M, softmax),
+                        [M_prim]]
+    acc = 0
+    for i in range(reps):
+        network = MLP(neural_structure, initialization=1)
+        network.train(X_train, Y_train, 150, 0.05, X_test, Y_test, epochs=epochs, optimizer=5)
+        acc_i = network.assessment(X_test, Y_test)
+        print(i, acc_i)
+        acc += acc_i
+    print(acc / reps, "xavier relu")
+
+    neural_structure = [(N, tanh),
+                        (M, softmax),
+                        [M_prim]]
+    acc = 0
+    for i in range(reps):
+        network = MLP(neural_structure, initialization=1)
+        network.train(X_train, Y_train, 150, 0.05, X_test, Y_test, epochs=epochs, optimizer=5)
+        acc_i = network.assessment(X_test, Y_test)
+        print(i, acc_i)
+        acc += acc_i
+    print(acc / reps, "xavier tanh")
 
 
 
